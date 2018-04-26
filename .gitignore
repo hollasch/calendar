@@ -1,0 +1,9 @@
+# Git Ignore for calendar project
+
+*.exe
+*.obj
+
+.vs/
+*.suo
+*.pdb
+*.ilk
