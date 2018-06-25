@@ -21,6 +21,8 @@ usage   :  calendar [month] [year]
 `calendar` prints the calendar for a given month. If no month is specified,
 the current month will be used. If no year is supplied, the calendar for the
 nearest month will be printed.
+
+v1.0.0  /  2018-06-24  /  https://github.com/hollasch/calendar
 )";
 
 
