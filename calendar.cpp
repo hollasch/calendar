@@ -14,12 +14,14 @@ static int  Jan1Day (int year);
 static inline void print(char*string) { fputs (string, stdout); }
 
 
-const char usage[] =
-"\ncalendar:  Print a calendar for a given month\n"
-"usage   :  calendar [month] [year]\n\n"
-"    calendar prints the calendar for a given month.  If no month is specified,\n"
-"the current month will be used.  If no year is supplied, the calendar for the\n"
-"nearest month will be printed.\n";
+const char usage[] = R"(
+calendar:  Print a calendar for a given month
+usage   :  calendar [month] [year]
+
+`calendar` prints the calendar for a given month. If no month is specified,
+the current month will be used. If no year is supplied, the calendar for the
+nearest month will be printed.
+)";
 
 
 const static char * const monthnames[] =
