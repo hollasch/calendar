@@ -12,7 +12,7 @@ calendar.exe: calendar.cpp
 	cl -nologo $(ccopts) -D_CRT_SECURE_NO_DEPRECATE calendar.cpp
 
 clean:
-	-del 2>nul /q calendar.obj
+    -del 2>nul *.obj *.pdb *.ilk
 
 clobber: clean
 	-del 2>nul /q calendar.exe
