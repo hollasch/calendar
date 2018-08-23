@@ -6,11 +6,6 @@ ccopts = -Ox
 
 all: calendar
 
-calendar: calendar.exe
-
-calendar.exe: calendar.cpp
-	cl -nologo $(ccopts) -D_CRT_SECURE_NO_DEPRECATE calendar.cpp
-
 clean:
     -del 2>nul *.obj *.pdb *.ilk
 
@@ -19,7 +14,7 @@ clobber: clean
 
 fresh: clobber all
 
-$(BINDIR)\calendar.exe: calendar.exe
-    if defined BINDIR copy /y $? %%BINDIR%%
 
-install: $(BINDIR)\calendar.exe
+calendar: calendar.exe
+calendar.exe: calendar.cpp
+	cl -nologo $(ccopts) -D_CRT_SECURE_NO_DEPRECATE calendar.cpp
