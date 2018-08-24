@@ -1,0 +1,3 @@
+#define calendar_VERSION_MAJOR  @calendar_VERSION_MAJOR@
+#define calendar_VERSION_MINOR  @calendar_VERSION_MINOR@
+#define calednar_VERSION_PATCH  @calendar_VERSION_PATCH@
