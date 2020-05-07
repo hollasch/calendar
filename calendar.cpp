@@ -1,6 +1,4 @@
 
-#include "calendarVersion.h"
-
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +23,7 @@ usage   :  calendar [month] [year]
 the current month will be used. If no year is supplied, the calendar for the
 nearest month will be printed.
 
-v1.0.0  /  2018-06-24  /  https://github.com/hollasch/calendar
+v1.1.0  /  2020-05-07  /  https://github.com/hollasch/calendar
 )";
 
 
