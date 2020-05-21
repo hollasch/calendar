@@ -1,4 +1,3 @@
-
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +22,7 @@ usage   :  calendar [month] [year]
 the current month will be used. If no year is supplied, the calendar for the
 nearest month will be printed.
 
-v1.1.0  /  2020-05-07  /  https://github.com/hollasch/calendar
+v1.1.1  /  2020-05-21  /  https://github.com/hollasch/calendar
 )";
 
 
@@ -68,10 +67,6 @@ static void GetPeriod (
     int  &month,
     int  &year)
 {
-    time_t currtime_t;
-    time (&currtime_t);
-    struct tm *currtime = localtime (&currtime_t);
-
     month = -1;
     year  = -1;
 
@@ -84,7 +79,7 @@ static void GetPeriod (
 
         if (isalpha(arg[0]))
         {
-            int mlen = strlen (arg);
+            auto mlen = strlen (arg);
             for (month=11;  month >= 0;  --month)
             {   if (0 == _strnicmp (arg, monthnames[month], mlen))
                     break;
@@ -122,11 +117,15 @@ static void GetPeriod (
 
     if (year < 0)
     {
-        year = 1900 + currtime->tm_year;
+        time_t currtime_global = time(nullptr);
+        struct tm currtime_local;
+        localtime_s (&currtime_local, &currtime_global);
+
+        year = 1900 + currtime_local.tm_year;
 
         if (month < 0)
-            month = currtime->tm_mon;
-        else if (month < currtime->tm_mon)
+            month = currtime_local.tm_mon;
+        else if (month < currtime_local.tm_mon)
             ++year;
     }
 
