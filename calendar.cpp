@@ -5,6 +5,24 @@
 #include <ctype.h>
 
 
+const auto version = "v1.1.1  2020-05-21  https://github.com/hollasch/calendar";
+
+const char * const monthnames[] = {
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+};
+
+const char days[] =
+    " 1  2  3  4  5  6  7  8  9 10 "
+    "11 12 13 14 15 16 17 18 19 20 "
+    "21 22 23 24 25 26 27 28 29 30 "
+    "31";
+
+
+inline void print (char* string) {
+    fputs(string, stdout);
+}
+
 
 const char usage[] = R"(
 calendar:  Print a calendar for a given month
@@ -18,26 +36,13 @@ v1.1.1  /  2020-05-21  /  https://github.com/hollasch/calendar
 )";
 
 
-const static char * const monthnames[] = {
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-};
-
-const static char days[] =
-    " 1  2  3  4  5  6  7  8  9 10 "
-    "11 12 13 14 15 16 17 18 19 20 "
-    "21 22 23 24 25 26 27 28 29 30 "
-    "31";
-
-
-
-static inline void print (char* string) {
-    fputs(string, stdout);
+void UsageExit() {
+    fprintf(stderr, usage);
+    exit(1);
 }
 
 
-
-static int Jan1Day (int year) {
+int Jan1Day (int year) {
     // This routine returns the day of the week for January 1st of the given year.
 
     int dow = 0;
@@ -123,7 +128,7 @@ void PrintMonth (int month, int year) {
 
 
 
-static void GetPeriod (int argc, char *argv[], int &month, int &year) {
+void GetPeriod (int argc, char *argv[], int &month, int &year) {
     // This routine parses the command-line arguments and determines the requested period to print.
 
     month = -1;
@@ -145,8 +150,7 @@ static void GetPeriod (int argc, char *argv[], int &month, int &year) {
 
             if (month < 0) {
                 fprintf(stderr, "calendar:  Unknown month name (%s)\n", arg);
-                fprintf(stderr, usage);
-                exit (1);
+                UsageExit();
             }
 
         } else {
@@ -154,8 +158,7 @@ static void GetPeriod (int argc, char *argv[], int &month, int &year) {
             int val = atoi(arg);
             if (val < 0) {
                 fprintf(stderr, "calendar:  Negative number unexpected (%d)\n", val);
-                fprintf(stderr, usage);
-                exit(1);
+                UsageExit();
             }
 
             // The numeric argument is a year if it's not in [1,12], or if it's greater than two
@@ -188,8 +191,7 @@ static void GetPeriod (int argc, char *argv[], int &month, int &year) {
 
     if (month < 0) {
         fprintf(stderr, "calendar: No month specified.\n");
-        fprintf(stderr, usage);
-        exit (1);
+        UsageExit();
     }
 }
 
