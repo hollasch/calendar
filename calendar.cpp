@@ -7,10 +7,18 @@
 
 const auto version = "v1.1.1  2020-05-21  https://github.com/hollasch/calendar";
 
+
+//--------------------------------------------------------------------------------------------------
+// Classes
+
 struct ProgramParameters {
     int month {-1};
     int year {-1};
 };
+
+
+//--------------------------------------------------------------------------------------------------
+// Constants
 
 const char * const monthnames[] = {
     "January", "February", "March", "April", "May", "June",
@@ -24,6 +32,9 @@ const char days[] =
     "31";
 
 
+//--------------------------------------------------------------------------------------------------
+// Utility Functions
+
 inline void print (const char* string) {
     fputs(string, stdout);
 }
@@ -32,6 +43,9 @@ inline bool streq (const char* a, const char* b) {
     return 0 == strcmp(a,b);
 }
 
+
+//--------------------------------------------------------------------------------------------------
+// Usage
 
 const char usage[] = R"(
 calendar:  Print a calendar for a given month
@@ -49,6 +63,7 @@ void UsageExit() {
 }
 
 
+//--------------------------------------------------------------------------------------------------
 int Jan1Day (int year) {
     // This routine returns the day of the week for January 1st of the given year.
 
@@ -66,7 +81,7 @@ int Jan1Day (int year) {
 }
 
 
-
+//--------------------------------------------------------------------------------------------------
 void MonthInfo (const int month, const int year, int &dayone, int &numdays) {
     // This procedure computes the information about the given month.
 
@@ -93,7 +108,7 @@ void MonthInfo (const int month, const int year, int &dayone, int &numdays) {
 }
 
 
-
+//--------------------------------------------------------------------------------------------------
 void PrintCal (int year) {
     // Prints the calendar for the entire given year.
     printf("%35c--- %d ---\n\n", ' ', year);
@@ -101,6 +116,7 @@ void PrintCal (int year) {
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void PrintMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
@@ -133,6 +149,7 @@ void PrintMonth (const ProgramParameters& params) {
 }
 
 
+//--------------------------------------------------------------------------------------------------
 ProgramParameters ProcessOptions (int argc, char *argv[]) {
     ProgramParameters params;
 
@@ -213,6 +230,7 @@ ProgramParameters ProcessOptions (int argc, char *argv[]) {
 }
 
 
+//--------------------------------------------------------------------------------------------------
 int main (int argc, char *argv[]) {
     PrintMonth(ProcessOptions(argc,argv));
     return 0;
