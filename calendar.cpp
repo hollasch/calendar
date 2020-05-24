@@ -7,6 +7,11 @@
 
 const auto version = "v1.1.1  2020-05-21  https://github.com/hollasch/calendar";
 
+struct ProgramParameters {
+    int month {-1};
+    int year {-1};
+};
+
 const char * const monthnames[] = {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -19,20 +24,22 @@ const char days[] =
     "31";
 
 
-inline void print (char* string) {
+inline void print (const char* string) {
     fputs(string, stdout);
+}
+
+inline bool streq (const char* a, const char* b) {
+    return 0 == strcmp(a,b);
 }
 
 
 const char usage[] = R"(
 calendar:  Print a calendar for a given month
-usage   :  calendar [month] [year]
+usage   :  calendar [-h|/?|--help] [--version] [month] [year]
 
 `calendar` prints the calendar for a given month. If no month is specified,
 the current month will be used. If no year is supplied, the calendar for the
 nearest month will be printed.
-
-v1.1.1  /  2020-05-21  /  https://github.com/hollasch/calendar
 )";
 
 
@@ -94,22 +101,21 @@ void PrintCal (int year) {
 }
 
 
-
-void PrintMonth (int month, int year) {
+void PrintMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
-    if (month < 0) {
-        PrintCal(year);
+    if (params.month < 0) {
+        PrintCal(params.year);
         return;
     }
 
-    printf("\n%s, %u\n\n", monthnames[month], year);
+    printf("\n%s, %u\n\n", monthnames[params.month], params.year);
     print("Mo Tu We Th Fr Sa Su\n");
 
     int week=0, calslot=0, day=0;
     int dayone, numdays;
 
-    MonthInfo(month, year, dayone, numdays);
+    MonthInfo(params.month, params.year, dayone, numdays);
 
     do {
         if (calslot++ < dayone) {
@@ -127,28 +133,37 @@ void PrintMonth (int month, int year) {
 }
 
 
+ProgramParameters ProcessOptions (int argc, char *argv[]) {
+    ProgramParameters params;
 
-void GetPeriod (int argc, char *argv[], int &month, int &year) {
     // This routine parses the command-line arguments and determines the requested period to print.
-
-    month = -1;
-    year  = -1;
 
     for (int argi=1;  argi < argc;  ++argi) {
 
         char *arg = argv[argi];
+
+        if (streq(arg, "/?") || streq(arg, "-h") || streq(arg, "--help")) {
+            puts(usage);
+            puts(version);
+            exit(0);
+        }
+
+        if (streq(arg, "--version")) {
+            printf("calendar  %s\n", version);
+            exit(0);
+        }
 
         // If the first char is an alpha, then it must be a month, else we need more info.
 
         if (isalpha(arg[0])) {
 
             auto mlen = strlen(arg);
-            for (month=11;  month >= 0;  --month) {
-                if (0 == _strnicmp(arg, monthnames[month], mlen))
+            for (params.month=11;  params.month >= 0;  --params.month) {
+                if (0 == _strnicmp(arg, monthnames[params.month], mlen))
                     break;
             }
 
-            if (month < 0) {
+            if (params.month < 0) {
                 fprintf(stderr, "calendar:  Unknown month name (%s)\n", arg);
                 UsageExit();
             }
@@ -165,44 +180,40 @@ void GetPeriod (int argc, char *argv[], int &month, int &year) {
             // digits (and leading zero).
 
             if ((val < 1) || (12 < val) || (strlen(arg) > 2))
-                year = val;
+                params.year = val;
             else
-                month = val-1;
+                params.month = val-1;
         }
     }
 
     // If the year was not specified, print the calendar for the current year. If the month is less
     // than this month, assume that it's for the one in the next year.
 
-    if (year < 0) {
+    if (params.year < 0) {
         time_t currtime_global = time(nullptr);
         struct tm currtime_local;
         localtime_s(&currtime_local, &currtime_global);
 
-        year = 1900 + currtime_local.tm_year;
+        params.year = 1900 + currtime_local.tm_year;
 
-        if (month < 0)
-            month = currtime_local.tm_mon;
-        else if (month < currtime_local.tm_mon)
-            ++year;
+        if (params.month < 0)
+            params.month = currtime_local.tm_mon;
+        else if (params.month < currtime_local.tm_mon)
+            ++params.year;
     }
 
     // Check to make sure that the month was specified.
 
-    if (month < 0) {
+    if (params.month < 0) {
         fprintf(stderr, "calendar: No month specified.\n");
         UsageExit();
     }
+
+    return params;
 }
 
 
-
 int main (int argc, char *argv[]) {
-    int month;
-    int year;
-
-    GetPeriod(argc, argv, month, year);
-    PrintMonth(month, year);
-
+    PrintMonth(ProcessOptions(argc,argv));
     return 0;
 }
