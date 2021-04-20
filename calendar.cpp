@@ -1,8 +1,8 @@
-#include <time.h>
+#include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <time.h>
 
 
 const auto version = "calendar v1.1.2 | 2021-04-20 | https://github.com/hollasch/calendar";
