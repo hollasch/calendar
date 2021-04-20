@@ -4,6 +4,11 @@
 #include <string.h>
 #include <time.h>
 
+#include <iomanip>
+#include <iostream>
+
+using std::cout, std::cerr;
+
 
 const auto version = "calendar v1.1.2 | 2021-04-20 | https://github.com/hollasch/calendar";
 
@@ -35,10 +40,6 @@ const char days[] =
 //--------------------------------------------------------------------------------------------------
 // Utility Functions
 
-inline void print (const char* string) {
-    fputs(string, stdout);
-}
-
 inline bool streq (const char* a, const char* b) {
     return 0 == strcmp(a,b);
 }
@@ -58,8 +59,7 @@ nearest month will be printed.
 
 
 void helpExit(int exitCode) {
-    fprintf(stdout, help);
-    fprintf(stdout, "\n%s\n", version);
+    cout << help << '\n' << version << '\n';
     exit(exitCode);
 }
 
@@ -112,8 +112,8 @@ void monthInfo (const int month, const int year, int &dayone, int &numdays) {
 //--------------------------------------------------------------------------------------------------
 void printCal (int year) {
     // Prints the calendar for the entire given year.
-    printf("%35c--- %d ---\n\n", ' ', year);
-    printf("    Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su\n");
+    cout << "                                   --- " << year << " ---\n\n";
+    cout << "    Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su\n";
 }
 
 
@@ -126,8 +126,8 @@ void printMonth (const ProgramParameters& params) {
         return;
     }
 
-    printf("\n%s, %u\n\n", monthnames[params.month], params.year);
-    print("Mo Tu We Th Fr Sa Su\n");
+    cout << '\n' << monthnames[params.month] << ", " << params.year << "\n\n";
+    cout << "Mo Tu We Th Fr Sa Su\n";
 
     int week=0, calslot=0, day=0;
     int dayone, numdays;
@@ -136,17 +136,18 @@ void printMonth (const ProgramParameters& params) {
 
     do {
         if (calslot++ < dayone) {
-            print("   ");
+            cout << "   ";
             continue;
         }
 
-        printf("%2d ", ++day);
+        //printf("%2d ", ++day);
+        cout << std::setw(2) << ++day << ' ';
 
-        if ((calslot % 7) == 0) print("\n");
+        if ((calslot % 7) == 0) cout << '\n';
 
     } while (day < numdays);
 
-    if ((calslot % 7) != 0) print("\n");
+    if ((calslot % 7) != 0) cout << '\n';
 }
 
 
@@ -165,7 +166,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
         }
 
         if (streq(arg, "-v") || streq(arg, "--version")) {
-            printf("%s\n", version);
+            cout << version << '\n';
             exit(0);
         }
 
@@ -180,7 +181,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
             }
 
             if (params.month < 0) {
-                fprintf(stderr, "calendar: Unknown month name (%s)\n", arg);
+                cerr << "calendar: Unknown month name (%s)\n";
                 exit(1);
             }
 
@@ -188,7 +189,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
             int val = atoi(arg);
             if (val < 0) {
-                fprintf(stderr, "calendar: Negative number unexpected (%d)\n", val);
+                cerr << "calendar: Negative number unexpected (%d)\n";
                 exit(1);
             }
 
@@ -221,7 +222,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
     // Check to make sure that the month was specified.
 
     if (params.month < 0) {
-        fprintf(stderr, "calendar: No month specified.\n");
+        cerr << "calendar: No month specified.\n";
         exit(1);
     }
 
