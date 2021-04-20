@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 
-const auto version = "v1.1.1  2020-05-21  https://github.com/hollasch/calendar";
+const auto version = "calendar v1.1.2 | 2021-04-20 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -45,11 +45,11 @@ inline bool streq (const char* a, const char* b) {
 
 
 //--------------------------------------------------------------------------------------------------
-// Usage
+// Help
 
-const char usage[] = R"(
+const char help[] = R"(
 calendar:  Print a calendar for a given month
-usage   :  calendar [-h|/?|--help] [--version] [month] [year]
+usage   :  calendar [-h|/?|--help] [-v|--version] [month] [year]
 
 `calendar` prints the calendar for a given month. If no month is specified,
 the current month will be used. If no year is supplied, the calendar for the
@@ -57,9 +57,10 @@ nearest month will be printed.
 )";
 
 
-void UsageExit() {
-    fprintf(stderr, usage);
-    exit(1);
+void helpExit(int exitCode) {
+    fprintf(stdout, help);
+    fprintf(stdout, "\n%s\n", version);
+    exit(exitCode);
 }
 
 
@@ -160,13 +161,11 @@ ProgramParameters ProcessOptions (int argc, char *argv[]) {
         char *arg = argv[argi];
 
         if (streq(arg, "/?") || streq(arg, "-h") || streq(arg, "--help")) {
-            puts(usage);
-            puts(version);
-            exit(0);
+            helpExit(0);
         }
 
-        if (streq(arg, "--version")) {
-            printf("calendar  %s\n", version);
+        if (streq(arg, "-v") || streq(arg, "--version")) {
+            printf("%s\n", version);
             exit(0);
         }
 
@@ -181,16 +180,16 @@ ProgramParameters ProcessOptions (int argc, char *argv[]) {
             }
 
             if (params.month < 0) {
-                fprintf(stderr, "calendar:  Unknown month name (%s)\n", arg);
-                UsageExit();
+                fprintf(stderr, "calendar: Unknown month name (%s)\n", arg);
+                exit(1);
             }
 
         } else {
 
             int val = atoi(arg);
             if (val < 0) {
-                fprintf(stderr, "calendar:  Negative number unexpected (%d)\n", val);
-                UsageExit();
+                fprintf(stderr, "calendar: Negative number unexpected (%d)\n", val);
+                exit(1);
             }
 
             // The numeric argument is a year if it's not in [1,12], or if it's greater than two
@@ -223,7 +222,7 @@ ProgramParameters ProcessOptions (int argc, char *argv[]) {
 
     if (params.month < 0) {
         fprintf(stderr, "calendar: No month specified.\n");
-        UsageExit();
+        exit(1);
     }
 
     return params;
