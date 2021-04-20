@@ -65,7 +65,7 @@ void helpExit(int exitCode) {
 
 
 //--------------------------------------------------------------------------------------------------
-int Jan1Day (int year) {
+int jan1Day (int year) {
     // This routine returns the day of the week for January 1st of the given year.
 
     int dow = 0;
@@ -83,7 +83,7 @@ int Jan1Day (int year) {
 
 
 //--------------------------------------------------------------------------------------------------
-void MonthInfo (const int month, const int year, int &dayone, int &numdays) {
+void monthInfo (const int month, const int year, int &dayone, int &numdays) {
     // This procedure computes the information about the given month.
 
     const static int dayofmonth1 [2][12] = {
@@ -105,12 +105,12 @@ void MonthInfo (const int month, const int year, int &dayone, int &numdays) {
     // Day one of the specified month is the day of January 1st of that year, plus the day of the
     // prior months, all modulo 7 (days in a week).
 
-    dayone = (Jan1Day(year) + dayofmonth1[leapyear][month]) % 7;
+    dayone = (jan1Day(year) + dayofmonth1[leapyear][month]) % 7;
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void PrintCal (int year) {
+void printCal (int year) {
     // Prints the calendar for the entire given year.
     printf("%35c--- %d ---\n\n", ' ', year);
     printf("    Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su\n");
@@ -118,11 +118,11 @@ void PrintCal (int year) {
 
 
 //--------------------------------------------------------------------------------------------------
-void PrintMonth (const ProgramParameters& params) {
+void printMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
     if (params.month < 0) {
-        PrintCal(params.year);
+        printCal(params.year);
         return;
     }
 
@@ -132,7 +132,7 @@ void PrintMonth (const ProgramParameters& params) {
     int week=0, calslot=0, day=0;
     int dayone, numdays;
 
-    MonthInfo(params.month, params.year, dayone, numdays);
+    monthInfo(params.month, params.year, dayone, numdays);
 
     do {
         if (calslot++ < dayone) {
@@ -151,7 +151,7 @@ void PrintMonth (const ProgramParameters& params) {
 
 
 //--------------------------------------------------------------------------------------------------
-ProgramParameters ProcessOptions (int argc, char *argv[]) {
+ProgramParameters processOptions (int argc, char *argv[]) {
     ProgramParameters params;
 
     // This routine parses the command-line arguments and determines the requested period to print.
@@ -231,6 +231,6 @@ ProgramParameters ProcessOptions (int argc, char *argv[]) {
 
 //--------------------------------------------------------------------------------------------------
 int main (int argc, char *argv[]) {
-    PrintMonth(ProcessOptions(argc,argv));
+    printMonth(processOptions(argc,argv));
     return 0;
 }
