@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const auto version = "calendar v1.1.2 | 2021-04-20 | https://github.com/hollasch/calendar";
+const auto version = "calendar v1.2.0-alpha | 2021-04-20 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -114,6 +114,7 @@ void printCal (int year) {
     // Prints the calendar for the entire given year.
     cout << "                                   --- " << year << " ---\n\n";
     cout << "    Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su\n";
+    cout << "\nNOT YET IMPLEMENTED\n";
 }
 
 
@@ -203,27 +204,23 @@ ProgramParameters processOptions (int argc, char *argv[]) {
         }
     }
 
-    // If the year was not specified, print the calendar for the current year. If the month is less
-    // than this month, assume that it's for the one in the next year.
+    // If the year was not specified, print the calendar for the current year. If the specified
+    // month is less than this month, assume that it's for the one in the next year.
+
+    if (params.year >= 0)
+        return params;
+
+    time_t currtime_global = time(nullptr);
+    struct tm currtime_local;
+    localtime_s(&currtime_local, &currtime_global);
 
     if (params.year < 0) {
-        time_t currtime_global = time(nullptr);
-        struct tm currtime_local;
-        localtime_s(&currtime_local, &currtime_global);
-
         params.year = 1900 + currtime_local.tm_year;
 
         if (params.month < 0)
-            params.month = currtime_local.tm_mon;
+            return params;
         else if (params.month < currtime_local.tm_mon)
             ++params.year;
-    }
-
-    // Check to make sure that the month was specified.
-
-    if (params.month < 0) {
-        cerr << "calendar: No month specified.\n";
-        exit(1);
     }
 
     return params;
