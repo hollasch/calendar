@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const auto version = "calendar v1.2.0-alpha | 2021-04-20 | https://github.com/hollasch/calendar";
+const auto version = "calendar 1.2.0-alpha.1 | 2021-04-20 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
