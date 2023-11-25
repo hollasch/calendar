@@ -10,15 +10,16 @@
 using std::cout, std::cerr;
 
 
-const auto version = "calendar 1.2.0-alpha.1 | 2021-04-20 | https://github.com/hollasch/calendar";
+const auto version = "calendar 1.2.0-alpha.2 | 2023-11-25 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
 // Classes
 
 struct ProgramParameters {
-    int month {-1};
-    int year {-1};
+    bool startSun { false };
+    int  month    { -1 };
+    int  year     { -1 };
 };
 
 
@@ -31,11 +32,7 @@ const char * const monthnames[] = {
 };
 
 const char days[] =
-    " 1  2  3  4  5  6  7  8  9 10 "
-    "11 12 13 14 15 16 17 18 19 20 "
-    "21 22 23 24 25 26 27 28 29 30 "
-    "31";
-
+    "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31";
 
 //--------------------------------------------------------------------------------------------------
 // Utility Functions
@@ -50,11 +47,17 @@ inline bool streq (const char* a, const char* b) {
 
 const char help[] = R"(
 calendar:  Print a calendar for a given month
-usage   :  calendar [-h|/?|--help] [-v|--version] [month] [year]
+usage   :  calendar [-h|/?|--help] [-v|--version]
+           [--weekStart <Mo[n[day]]|<Su[n[day]]>
+           [month] [year]
 
-`calendar` prints the calendar for a given month. If no month is specified,
-the current month will be used. If no year is supplied, the calendar for the
-nearest month will be printed.
+`calendar` prints the monthly calendar for a given month. If no month is
+specified, the current month will be used. If no year is supplied, the calendar
+for the nearest month will be printed.
+
+The `--weekStart` option sets the specified day as the first day of the week.
+The choices are "mo", "mon", "monday", "su", "sun", or "sunday" (case
+insensitive). By default, Monday is the first day of the week.
 )";
 
 
@@ -173,7 +176,24 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
         // If the first char is an alpha, then it must be a month, else we need more info.
 
-        if (isalpha(arg[0])) {
+        if (arg[0] == '-' && arg[1] == '-') {
+
+            if (0 == _strnicmp(arg, "--weekstart", strlen(arg))) {
+                if (argc <= ++argi) {
+                    cerr << "calendar: Missing expected argument to --weekStart option.\n";
+                    exit(1);
+                }
+                arg = argv[argi];
+
+                params.startSun = 0 == _stricmp(arg, "su") ||
+                                  0 == _stricmp(arg, "sun") ||
+                                  0 == _stricmp(arg, "sunday");
+            } else {
+                cerr << "calendar: Unrecognized option (" << arg << ")\n";
+                exit(1);
+            }
+
+        } else if (isalpha(arg[0])) {
 
             auto mlen = strlen(arg);
             for (params.month=11;  params.month >= 0;  --params.month) {
@@ -229,6 +249,10 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
 //--------------------------------------------------------------------------------------------------
 int main (int argc, char *argv[]) {
-    printMonth(processOptions(argc,argv));
+    auto params = processOptions(argc,argv);
+
+    cout << "params.startSun = " << (params.startSun ? "true\n" : "false\n");
+
+    printMonth(params);
     return 0;
 }
