@@ -72,6 +72,12 @@ void helpExit(int exitCode) {
 
 
 //--------------------------------------------------------------------------------------------------
+bool isLeapYear(int year) {
+    return ((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0));
+}
+
+
+//--------------------------------------------------------------------------------------------------
 int jan1Day (int year) {
     // This routine returns the day of the week for January 1st of the given year.
 
@@ -90,29 +96,26 @@ int jan1Day (int year) {
 
 
 //--------------------------------------------------------------------------------------------------
-void monthInfo (const int month, const int year, int &dayone, int &numdays) {
+int monthNumDays (int year, int month) {
     // This procedure computes the information about the given month.
-
-    const static int dayofmonth1 [2][12] = {
-        {  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
-        {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
-    };
 
     const static int monthdays [2][12] = {
         { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
         { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
     };
 
-    // Leapyear if divisible by four and not divisible by 100, unless also divisible by 400.
+    return monthdays[isLeapYear(year) ? 0 : 1][month];
+}
 
-    int leapyear = ((year%4) == 0) && (((year%100) != 0) || ((year%400) == 0));
 
-    numdays = monthdays [leapyear] [month];
+//--------------------------------------------------------------------------------------------------
+int monthDayOne (int year, int month) {
+    const static int monthDay1 [2][12] {
+        {  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
+        {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
+    };
 
-    // Day one of the specified month is the day of January 1st of that year, plus the day of the
-    // prior months, all modulo 7 (days in a week).
-
-    dayone = (jan1Day(year) + dayofmonth1[leapyear][month]) % 7;
+    return jan1Day(year) + monthDay1[isLeapYear(year) ? 0 : 1][month];
 }
 
 
@@ -122,10 +125,31 @@ void printCal (int year) {
     cout << "                                   --- " << year << " ---\n\n";
 
     for (int leftMonth=0;  leftMonth < 4;  ++leftMonth) {
-        cout << "    Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa\n";
-        for (int relMonth=leftMonth;  relMonth < 3;  ++relMonth) {
+        cout << "\n    Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa\n";
+
+        bool monthFinished[3] { false, false, false };
+        int  monthsFinished = 0;
+        int  monthLine = 0;
+
+        while (monthsFinished < 3) {
+            for (int relMonth=0;  relMonth < 3;  ++relMonth) {
+                if (relMonth > 0)
+                    cout << "    ";
+
+                if (monthLine == 0) {
+                    cout << monthShortNames[leftMonth + relMonth] << ' ';
+                } else {
+                    cout << "    ";
+                }
+                cout << "xx xx xx xx xx xx xx";
+            }
+
+            ++monthLine;
+            if (monthLine > 5)
+                monthsFinished = 3;
+
+            cout << '\n';
         }
-        cout << "\n";
     }
 }
 
@@ -145,10 +169,14 @@ void printMonth (const ProgramParameters& params) {
     int week=0, calslot=0, day=0;
     int dayone, numdays;
 
-    monthInfo(params.month, params.year, dayone, numdays);
+    const int dayOne = monthDayOne(params.year, params.month);
+    const int numDays = monthNumDays(params.year, params.month);
+
+    cout << "Number of days: " << numDays << '\n';
+    cout << "Day One: " << dayOne << " -> " << (dayOne % 7) << "\n\n";
 
     do {
-        if (calslot++ < dayone) {
+        if (calslot++ < dayOne) {
             cout << "   ";
             continue;
         }
@@ -158,7 +186,7 @@ void printMonth (const ProgramParameters& params) {
 
         if ((calslot % 7) == 0) cout << '\n';
 
-    } while (day < numdays);
+    } while (day < numDays);
 
     if ((calslot % 7) != 0) cout << '\n';
 }
