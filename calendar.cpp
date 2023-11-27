@@ -17,9 +17,9 @@ const auto version = "calendar 1.2.0-alpha.2 | 2023-11-25 | https://github.com/h
 // Classes
 
 struct ProgramParameters {
-    bool startSun { false };
     int  month    { -1 };
     int  year     { -1 };
+    bool startSun { false };
 };
 
 
@@ -29,6 +29,10 @@ struct ProgramParameters {
 const char * const monthnames[] = {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
+};
+
+const char * const monthShortNames[] = {
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
 };
 
 const char days[] =
@@ -116,8 +120,13 @@ void monthInfo (const int month, const int year, int &dayone, int &numdays) {
 void printCal (int year) {
     // Prints the calendar for the entire given year.
     cout << "                                   --- " << year << " ---\n\n";
-    cout << "    Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su      Mo Tu We Th Fr  Sa Su\n";
-    cout << "\nNOT YET IMPLEMENTED\n";
+
+    for (int leftMonth=0;  leftMonth < 4;  ++leftMonth) {
+        cout << "    Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa\n";
+        for (int relMonth=leftMonth;  relMonth < 3;  ++relMonth) {
+        }
+        cout << "\n";
+    }
 }
 
 
@@ -252,6 +261,8 @@ int main (int argc, char *argv[]) {
     auto params = processOptions(argc,argv);
 
     cout << "params.startSun = " << (params.startSun ? "true\n" : "false\n");
+    cout << "params.month    = " << params.month << '\n';
+    cout << "params.year     = " << params.year << '\n';
 
     printMonth(params);
     return 0;
