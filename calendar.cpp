@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const auto version = "calendar 1.2.0-alpha.2 | 2023-11-25 | https://github.com/hollasch/calendar";
+const auto version = "calendar 1.2.0-alpha.3 | 2023-11-27 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -26,22 +26,23 @@ struct ProgramParameters {
 //--------------------------------------------------------------------------------------------------
 // Constants
 
-const char * const monthnames[] = {
+const char* const monthNames[] {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 };
 
-const char * const monthShortNames[] = {
+const char* const monthShortNames[] {
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
 };
 
-const char days[] =
-    "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31";
+const char days[] {
+    "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31"
+};
 
 //--------------------------------------------------------------------------------------------------
 // Utility Functions
 
-inline bool streq (const char* a, const char* b) {
+inline bool strEqual (const char* a, const char* b) {
     return 0 == strcmp(a,b);
 }
 
@@ -62,6 +63,9 @@ for the nearest month will be printed.
 The `--weekStart` option sets the specified day as the first day of the week.
 The choices are "mo", "mon", "monday", "su", "sun", or "sunday" (case
 insensitive). By default, Monday is the first day of the week.
+
+A month is recognized as starting with a letter, or if it is a number between
+1 and 12 with only one or two digits.
 )";
 
 
@@ -82,14 +86,14 @@ int jan1Day (int year) {
     // This routine returns the day of the week for January 1st of the given year.
 
     int dow = 0;
-    int yearfrac = (year-1) % 400;
+    int yearFrac = (year-1) % 400;
 
-    while (yearfrac >= 100) {
+    while (yearFrac >= 100) {
         dow += 5;
-        yearfrac -= 100;
+        yearFrac -= 100;
     }
 
-    dow += yearfrac + int(yearfrac/4);
+    dow += yearFrac + int(yearFrac/4);
 
     return dow % 7;
 }
@@ -99,12 +103,12 @@ int jan1Day (int year) {
 int monthNumDays (int year, int month) {
     // This procedure computes the information about the given month.
 
-    const static int monthdays [2][12] = {
+    const static int monthDays [2][12] = {
         { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
         { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
     };
 
-    return monthdays[isLeapYear(year) ? 0 : 1][month];
+    return monthDays[isLeapYear(year) ? 0 : 1][month];
 }
 
 
@@ -163,11 +167,11 @@ void printMonth (const ProgramParameters& params) {
         return;
     }
 
-    cout << '\n' << monthnames[params.month] << ", " << params.year << "\n\n";
+    cout << '\n' << monthNames[params.month] << ", " << params.year << "\n\n";
     cout << "Mo Tu We Th Fr Sa Su\n";
 
-    int week=0, calslot=0, day=0;
-    int dayone, numdays;
+    int calSlot = 0;
+    int day = 0;
 
     const int dayOne = monthDayOne(params.year, params.month);
     const int numDays = monthNumDays(params.year, params.month);
@@ -176,19 +180,18 @@ void printMonth (const ProgramParameters& params) {
     cout << "Day One: " << dayOne << " -> " << (dayOne % 7) << "\n\n";
 
     do {
-        if (calslot++ < dayOne) {
+        if (calSlot++ < dayOne) {
             cout << "   ";
             continue;
         }
 
-        //printf("%2d ", ++day);
         cout << std::setw(2) << ++day << ' ';
 
-        if ((calslot % 7) == 0) cout << '\n';
+        if ((calSlot % 7) == 0) cout << '\n';
 
     } while (day < numDays);
 
-    if ((calslot % 7) != 0) cout << '\n';
+    if ((calSlot % 7) != 0) cout << '\n';
 }
 
 
@@ -202,11 +205,11 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
         char *arg = argv[argi];
 
-        if (streq(arg, "/?") || streq(arg, "-h") || streq(arg, "--help")) {
+        if (strEqual(arg, "/?") || strEqual(arg, "-h") || strEqual(arg, "--help")) {
             helpExit(0);
         }
 
-        if (streq(arg, "-v") || streq(arg, "--version")) {
+        if (strEqual(arg, "-v") || strEqual(arg, "--version")) {
             cout << version << '\n';
             exit(0);
         }
@@ -234,7 +237,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
             auto mlen = strlen(arg);
             for (params.month=11;  params.month >= 0;  --params.month) {
-                if (0 == _strnicmp(arg, monthnames[params.month], mlen))
+                if (0 == _strnicmp(arg, monthNames[params.month], mlen))
                     break;
             }
 
@@ -293,5 +296,6 @@ int main (int argc, char *argv[]) {
     cout << "params.year     = " << params.year << '\n';
 
     printMonth(params);
+
     return 0;
 }
