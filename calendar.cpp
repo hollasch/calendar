@@ -228,8 +228,15 @@ ProgramParameters processOptions (int argc, char *argv[]) {
                 params.startSun = 0 == _stricmp(arg, "su") ||
                                   0 == _stricmp(arg, "sun") ||
                                   0 == _stricmp(arg, "sunday");
+
+                if (0 == _stricmp(arg, "su") || 0 == _stricmp(arg, "sun") || 0 == _stricmp(arg, "sunday")) {
+                    params.startSun = true;
+                } else if (0 != _stricmp(arg, "mo") && 0 != _stricmp(arg, "mon") && 0 != _stricmp(arg, "monday")) {
+                    cerr << "calendar: Unrecognized --weekstart option (" << arg << ").\n";
+                    exit(1);
+                }
             } else {
-                cerr << "calendar: Unrecognized option (" << arg << ")\n";
+                cerr << "calendar: Unrecognized option (" << arg << ").\n";
                 exit(1);
             }
 
