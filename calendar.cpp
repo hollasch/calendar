@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const auto version = "calendar 1.2.0-alpha.3 | 2023-11-27 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0-alpha.3 | 2023-11-27 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ const char* const monthShortNames[] {
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
 };
 
-const char days[] {
+const char* days[] {
     "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31"
 };
 
@@ -249,7 +249,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
             }
 
             if (params.month < 0) {
-                cerr << "calendar: Unknown month name (%s)\n";
+                cerr << "calendar: Unknown month name (" << arg << ").\n";
                 exit(1);
             }
 
@@ -257,7 +257,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
             int val = atoi(arg);
             if (val < 0) {
-                cerr << "calendar: Negative number unexpected (%d)\n";
+                cerr << "calendar: Negative number unexpected (" << arg << ")\n";
                 exit(1);
             }
 
