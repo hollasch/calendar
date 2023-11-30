@@ -14,21 +14,16 @@ const char* version = "calendar 1.2.0-alpha.3 | 2023-11-27 | https://github.com/
 
 
 //--------------------------------------------------------------------------------------------------
-// Classes
-
-struct ProgramParameters {
-    int  month    { -1 };
-    int  year     { -1 };
-    bool startSun { false };
-};
-
-
-//--------------------------------------------------------------------------------------------------
 // Constants
 
 const char* const monthNames[] {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
+};
+
+const char* dowHeaders[] {
+    "Mo Tu We Th Fr Sa Su",
+    "Su Mo Tu We Th Fr Sa"
 };
 
 const char* const monthShortNames[] {
@@ -38,6 +33,17 @@ const char* const monthShortNames[] {
 const char* days[] {
     "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31"
 };
+
+//--------------------------------------------------------------------------------------------------
+// Classes
+
+struct ProgramParameters {
+    int  month    { -1 };
+    int  year     { -1 };
+    bool startSun { false };
+    const char* dowHeader;
+};
+
 
 //--------------------------------------------------------------------------------------------------
 // Utility Functions
@@ -53,16 +59,14 @@ inline bool strEqual (const char* a, const char* b) {
 const char help[] = R"(
 calendar:  Print a calendar for a given month
 usage   :  calendar [-h|/?|--help] [-v|--version]
-           [--weekStart <Mo[n[day]]|<Su[n[day]]>
-           [month] [year]
+           [--startMon] [month] [year]
 
 `calendar` prints the monthly calendar for a given month. If no month is
 specified, the current month will be used. If no year is supplied, the calendar
 for the nearest month will be printed.
 
-The `--weekStart` option sets the specified day as the first day of the week.
-The choices are "mo", "mon", "monday", "su", "sun", or "sunday" (case
-insensitive). By default, Monday is the first day of the week.
+The `--startSun` option sets first day of the week as Sunday. By default, Monday
+is considered the first day of the week.
 
 A month is recognized as starting with a letter, or if it is a number between
 1 and 12 with only one or two digits.
@@ -167,9 +171,6 @@ void printMonth (const ProgramParameters& params) {
         return;
     }
 
-    cout << '\n' << monthNames[params.month] << ", " << params.year << "\n\n";
-    cout << "Mo Tu We Th Fr Sa Su\n";
-
     int calSlot = 0;
     int day = 0;
 
@@ -178,6 +179,9 @@ void printMonth (const ProgramParameters& params) {
 
     cout << "Number of days: " << numDays << '\n';
     cout << "Day One: " << dayOne << " -> " << (dayOne % 7) << "\n\n";
+
+    cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n";
+    cout << params.dowHeader << "\n";
 
     do {
         if (calSlot++ < dayOne) {
@@ -218,23 +222,8 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 
         if (arg[0] == '-' && arg[1] == '-') {
 
-            if (0 == _strnicmp(arg, "--weekstart", strlen(arg))) {
-                if (argc <= ++argi) {
-                    cerr << "calendar: Missing expected argument to --weekStart option.\n";
-                    exit(1);
-                }
-                arg = argv[argi];
-
-                params.startSun = 0 == _stricmp(arg, "su") ||
-                                  0 == _stricmp(arg, "sun") ||
-                                  0 == _stricmp(arg, "sunday");
-
-                if (0 == _stricmp(arg, "su") || 0 == _stricmp(arg, "sun") || 0 == _stricmp(arg, "sunday")) {
-                    params.startSun = true;
-                } else if (0 != _stricmp(arg, "mo") && 0 != _stricmp(arg, "mon") && 0 != _stricmp(arg, "monday")) {
-                    cerr << "calendar: Unrecognized --weekstart option (" << arg << ").\n";
-                    exit(1);
-                }
+            if (0 == _strnicmp(arg, "--startSun", strlen(arg))) {
+                params.startSun = true;
             } else {
                 cerr << "calendar: Unrecognized option (" << arg << ").\n";
                 exit(1);
@@ -270,6 +259,8 @@ ProgramParameters processOptions (int argc, char *argv[]) {
                 params.month = val-1;
         }
     }
+
+    params.dowHeader = dowHeaders[params.startSun ? 1 : 0];
 
     // If the year was not specified, print the calendar for the current year. If the specified
     // month is less than this month, assume that it's for the one in the next year.
