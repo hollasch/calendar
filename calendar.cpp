@@ -87,9 +87,10 @@ bool isLeapYear(int year) {
 
 //--------------------------------------------------------------------------------------------------
 int jan1Day (int year) {
-    // This routine returns the day of the week for January 1st of the given year.
+    // This routine returns the day of the week for January 1st of the given year. 0 == Sunday,
+    // 6 == Saturday.
 
-    int dow = 0;
+    int dow = 1;
     int yearFrac = (year-1) % 400;
 
     while (yearFrac >= 100) {
@@ -118,12 +119,16 @@ int monthNumDays (int year, int month) {
 
 //--------------------------------------------------------------------------------------------------
 int monthDayOne (int year, int month) {
-    const static int monthDay1 [2][12] {
+    // Returns the day of the week of the first of the given month and year.
+
+    const static int monthDay1Offset [2][12] {
         {  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
         {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
     };
 
-    return jan1Day(year) + monthDay1[isLeapYear(year) ? 0 : 1][month];
+    int leapYear = isLeapYear(year) ? 0 : 1;
+
+    return (jan1Day(year) + monthDay1Offset[leapYear][month]) % 7;
 }
 
 
@@ -292,6 +297,8 @@ int main (int argc, char *argv[]) {
     cout << "params.startSun = " << (params.startSun ? "true\n" : "false\n");
     cout << "params.month    = " << params.month << '\n';
     cout << "params.year     = " << params.year << '\n';
+
+    cout << "Jan 1 " << params.year << " DOW  = " << jan1Day(params.year) << '\n';
 
     printMonth(params);
 
