@@ -294,14 +294,27 @@ ProgramParameters processOptions (int argc, char *argv[]) {
                 exit(1);
             }
 
-            // The numeric argument is a year if it's not in [1,12], or if it's greater than two
-            // digits (and leading zero).
+            // The numeric argument is a year if it has a leading zero, or is greater than two
+            // digits, or if it is outside the interval [1,12].
 
             if (arg[0] == 0 || val < 1 || 12 < val || strlen(arg) > 2)
                 params.year = val;
             else
                 params.month = val-1;
         }
+    }
+
+    // Handle limits of the Gregorian calendar.
+
+    const int GregorianStartYear  = 1582;
+    const int GregorianStartMonth = 11;
+
+    if (  params.year < GregorianStartYear
+       || (params.year == GregorianStartYear && params.month <= GregorianStartMonth)
+       )
+    {
+        cerr << "calendar: Dates before the start of the Gregorian calendar (4-15 October 1582) are unsupported.\n";
+        exit(1);
     }
 
     params.dowHeader = dowHeaders[params.startSun ? 1 : 0];
