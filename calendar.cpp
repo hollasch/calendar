@@ -1,3 +1,11 @@
+//======================================================================================================================
+//
+// calendar - print calendar for a given month or year
+//
+// See `help` text below for details.
+//
+//======================================================================================================================
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,12 +18,12 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0-alpha.5 | 2023-12-01 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0-alpha.6 | 2023-12-01 | https://github.com/hollasch/calendar";
 
 //--------------------------------------------------------------------------------------------------
 
 const char help[] = R"(
-calendar:  Print a calendar for a given month
+calendar:  Print calendar for a given month or year
 usage   :  calendar [-h|/?|--help] [-v|--version]
            [--startSun] [month] [year]
 
