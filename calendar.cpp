@@ -131,6 +131,21 @@ int monthDayOne (int year, int month) {
 
 
 //--------------------------------------------------------------------------------------------------
+void printMonthLine (int day, int lastDay) {
+    for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
+        if (1 <= day && day <= lastDay)
+            cout << std::setw(2) << day;
+        else
+            cout << "  ";
+
+        if (dowColumn < 6)
+            cout << ' ';
+    }
+    cout << '\n';
+}
+
+
+//--------------------------------------------------------------------------------------------------
 void printYear (int year) {
     // Prints the calendar for the entire given year.
     cout << "                                   --- " << year << " ---\n\n";
@@ -162,21 +177,6 @@ void printYear (int year) {
             cout << '\n';
         }
     }
-}
-
-
-//--------------------------------------------------------------------------------------------------
-void printMonthLine (int day, int lastDay) {
-    for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
-        if (1 <= day && day <= lastDay)
-            cout << std::setw(2) << day;
-        else
-            cout << "  ";
-
-        if (dowColumn < 6)
-            cout << ' ';
-    }
-    cout << '\n';
 }
 
 
