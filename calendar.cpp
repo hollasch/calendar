@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0-alpha.4 | 2023-11-30 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0-alpha.5 | 2023-12-01 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ inline bool strEqual (const char* a, const char* b) {
 const char help[] = R"(
 calendar:  Print a calendar for a given month
 usage   :  calendar [-h|/?|--help] [-v|--version]
-           [--startMon] [month] [year]
+           [--startSun] [month] [year]
 
 `calendar` prints the monthly calendar for a given month. If no month is
 specified, the current month will be used. If no year is supplied, the calendar
@@ -131,6 +131,19 @@ int monthDayOne (int year, int month) {
 
 
 //--------------------------------------------------------------------------------------------------
+int monthWeekStartDay (bool startSun, int dayOne) {
+    // Returns the integer day value of the first day of the week. For example, if the 1st falls on
+    // a Wednesday, and the week starts on Monday, then this function returns -1. That is, Monday is
+    // the -1st, Tuesday is the 0th, Wednesday is the 1st, and so on.
+
+    if (startSun)
+        return 1 - dayOne;
+
+    return 1 - ((dayOne + 6) % 7);
+}
+
+
+//--------------------------------------------------------------------------------------------------
 void printMonthLine (int day, int lastDay) {
     for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
         if (1 <= day && day <= lastDay)
@@ -141,41 +154,50 @@ void printMonthLine (int day, int lastDay) {
         if (dowColumn < 6)
             cout << ' ';
     }
-    cout << '\n';
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void printYear (int year) {
+void printYear (const ProgramParameters& params) {
     // Prints the calendar for the entire given year.
-    cout << "                                   --- " << year << " ---\n\n";
+
+    cout << "                                   --- " << params.year << " ---\n";
 
     for (int leftMonth=0;  leftMonth < 4;  ++leftMonth) {
-        cout << "\n    Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa        Su Mo Tu We Th Fr Sa\n";
 
-        bool monthFinished[3] { false, false, false };
-        int  monthsFinished = 0;
-        int  monthLine = 0;
+        cout << "\n    "   << params.dowHeader
+             << "        " << params.dowHeader
+             << "        " << params.dowHeader;
 
-        while (monthsFinished < 3) {
-            for (int relMonth=0;  relMonth < 3;  ++relMonth) {
-                if (relMonth > 0)
-                    cout << "    ";
+        int day[3];      // Current day for each column of months
+        int lastDay[3];  // Last day for each month of column
 
-                if (monthLine == 0) {
-                    cout << monthShortNames[leftMonth + relMonth] << ' ';
-                } else {
-                    cout << "    ";
-                }
-                cout << "xx xx xx xx xx xx xx";
-            }
-
-            ++monthLine;
-            if (monthLine > 5)
-                monthsFinished = 3;
-
-            cout << '\n';
+        for (int column = 0;  column < 3;  ++column) {
+            int month = leftMonth + 4*column;
+            day[column] = monthWeekStartDay(params.startSun, monthDayOne(params.year, month)),
+            lastDay[column] = monthNumDays(params.year, month);
         }
+
+        while (day[0] <= lastDay[0] || day[1] <= lastDay[1] || day[2] <= lastDay[2]) {
+            bool firstLine = true;
+            cout << '\n';
+            for (int column = 0;  column < 3;  ++column) {
+                int month = leftMonth + 4*column;
+
+                if (0 < column)
+                    cout << "    ";
+
+                if (day[column] < 2)
+                    cout << monthShortNames[month] << ' ';
+                else
+                    cout << "    ";
+
+                printMonthLine(day[column], lastDay[column]);
+                day[column] += 7;
+            }
+        }
+
+        cout << '\n';
     }
 }
 
@@ -185,25 +207,19 @@ void printMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
     if (params.month < 0) {
-        printYear(params.year);
+        printYear(params);
         return;
     }
-
-    const int dayOne = monthDayOne(params.year, params.month);
-    const int numDays = monthNumDays(params.year, params.month);
 
     cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n"
          << params.dowHeader << '\n';
 
-    int day;
-    if (params.startSun) {
-        day = 1 - dayOne;
-    } else {
-        day = 1 - ((dayOne + 6) % 7);
-    }
+    int day = monthWeekStartDay(params.startSun, monthDayOne(params.year, params.month));
+    const int numDays = monthNumDays(params.year, params.month);
 
     while (day <= numDays) {
         printMonthLine(day, numDays);
+        cout << '\n';
         day += 7;
     }
 }
@@ -298,20 +314,6 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 //--------------------------------------------------------------------------------------------------
 int main (int argc, char *argv[]) {
     auto params = processOptions(argc,argv);
-
-//  cout << "\n----------------------------------------------------------------------------------------------------\n";
-//  cout << "params.month     = " << params.month << '\n';
-//  cout << "params.year      = " << params.year << '\n';
-//  cout << "params.startSun  = " << (params.startSun ? "true\n" : "false\n");
-//  cout << "params.dowHeader = '" << params.dowHeader << "'\n";
-//
-//  cout << "\nJan 1 " << params.year << " DOW   = " << jan1Day(params.year) << '\n';
-//  cout << "isLeapYear(" << params.year << ") = " << (isLeapYear(params.year) ? "true\n" : "false\n");
-//
-//  cout << "Number of days   =  " << monthNumDays(params.year, params.month) << '\n';
-//  cout << "Day One          =  " << monthDayOne(params.year, params.month) << '\n';
-//
-//  cout << "====================\n";
 
     printMonth(params);
 
