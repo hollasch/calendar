@@ -12,6 +12,24 @@ using std::cout, std::cerr;
 
 const char* version = "calendar 1.2.0-alpha.5 | 2023-12-01 | https://github.com/hollasch/calendar";
 
+//--------------------------------------------------------------------------------------------------
+
+const char help[] = R"(
+calendar:  Print a calendar for a given month
+usage   :  calendar [-h|/?|--help] [-v|--version]
+           [--startSun] [month] [year]
+
+`calendar` prints the monthly calendar for a given month. If no month is
+specified, the current month will be used. If no year is supplied, the calendar
+for the nearest month will be printed.
+
+The `--startSun` option sets first day of the week as Sunday. By default, Monday
+is considered the first day of the week.
+
+A month is recognized as starting with a letter, or if it is a number between
+1 and 12 with only one or two digits.
+)";
+
 
 //--------------------------------------------------------------------------------------------------
 // Constants
@@ -43,47 +61,36 @@ struct ProgramParameters {
 
 
 //--------------------------------------------------------------------------------------------------
-// Utility Functions
-
 inline bool strEqual (const char* a, const char* b) {
     return 0 == strcmp(a,b);
 }
 
 
 //--------------------------------------------------------------------------------------------------
-// Help
-
-const char help[] = R"(
-calendar:  Print a calendar for a given month
-usage   :  calendar [-h|/?|--help] [-v|--version]
-           [--startSun] [month] [year]
-
-`calendar` prints the monthly calendar for a given month. If no month is
-specified, the current month will be used. If no year is supplied, the calendar
-for the nearest month will be printed.
-
-The `--startSun` option sets first day of the week as Sunday. By default, Monday
-is considered the first day of the week.
-
-A month is recognized as starting with a letter, or if it is a number between
-1 and 12 with only one or two digits.
-)";
-
-
-void helpExit(int exitCode) {
+void helpExit (int exitCode) {
     cout << help << '\n' << version << '\n';
     exit(exitCode);
 }
 
 
 //--------------------------------------------------------------------------------------------------
-bool isLeapYear(int year) {
+std::pair<long,long> getCurrentYearMonth() {
+    time_t currtime_global = time(nullptr);
+    struct tm currtime_local;
+    localtime_s(&currtime_local, &currtime_global);
+
+    return { 1900 + currtime_local.tm_year, currtime_local.tm_mon - 1 };
+}
+
+
+//--------------------------------------------------------------------------------------------------
+bool isLeapYear (int year) {
     return ((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0));
 }
 
 
 //--------------------------------------------------------------------------------------------------
-int jan1Day (int year) {
+int jan1DayOfWeek (int year) {
     // This routine returns the day of the week for January 1st of the given year. 0 == Sunday,
     // 6 == Saturday.
 
@@ -103,30 +110,30 @@ int jan1Day (int year) {
 
 //--------------------------------------------------------------------------------------------------
 int monthNumDays (int year, int month) {
-    // This procedure computes the information about the given month.
+    // Return the number of days in the given month.
 
-    const static int monthDays [2][12] = {
-        { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
-        { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-    };
+    const static int monthLengthNonLeap[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    const static int monthLengthLeap[]    { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-    return monthDays[isLeapYear(year) ? 1 : 0][month];
+    if (isLeapYear(year))
+        return monthLengthLeap[month];
+
+    return monthLengthNonLeap[month];
 }
 
 
 //--------------------------------------------------------------------------------------------------
-int monthDayOne (int year, int month) {
+int monthDayOneDOW (int year, int month) {
     // Returns the day of the week of the first of the given month and year. 0 = Sunday,
     // 6 = Saturday.
 
-    const static int monthDay1Offset [2][12] {
-        {  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
-        {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
-    };
+    const static int monthDay1OffsetNonLeap[] { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    const static int monthDay1OffsetLeap[]    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 };
 
-    int leapYear = isLeapYear(year) ? 1 : 0;
+    if (isLeapYear(year))
+        return (jan1DayOfWeek(year) + monthDay1OffsetLeap[month]) % 7;
 
-    return (jan1Day(year) + monthDay1Offset[leapYear][month]) % 7;
+    return (jan1DayOfWeek(year) + monthDay1OffsetNonLeap[month]) % 7;
 }
 
 
@@ -145,6 +152,9 @@ int monthWeekStartDay (bool startSun, int dayOne) {
 
 //--------------------------------------------------------------------------------------------------
 void printMonthLine (int day, int lastDay) {
+    // Print a single line of the monthly calendar (without end of line) starting at the given day.
+    // Days less than one or greater than the lastDay are printed as empty spaces.
+
     for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
         if (1 <= day && day <= lastDay)
             cout << std::setw(2) << day;
@@ -163,23 +173,28 @@ void printYear (const ProgramParameters& params) {
 
     cout << "                                   --- " << params.year << " ---\n";
 
+    // Print four rows of three month columns.
+
     for (int leftMonth=0;  leftMonth < 4;  ++leftMonth) {
 
-        cout << "\n    "   << params.dowHeader
+        cout << "\n    "   << params.dowHeader   // Print day-of-week headers
              << "        " << params.dowHeader
              << "        " << params.dowHeader;
 
-        int day[3];      // Current day for each column of months
-        int lastDay[3];  // Last day for each month of column
+        int day[3];      // Current month day for each column
+        int lastDay[3];  // Last    month day for each column
+
+        // Initialize start and last days for each month column.
 
         for (int column = 0;  column < 3;  ++column) {
             int month = leftMonth + 4*column;
-            day[column] = monthWeekStartDay(params.startSun, monthDayOne(params.year, month)),
+            day[column] = monthWeekStartDay(params.startSun, monthDayOneDOW(params.year, month)),
             lastDay[column] = monthNumDays(params.year, month);
         }
 
+        // Print each month calendar row for all three columns, until all three are finished.
+
         while (day[0] <= lastDay[0] || day[1] <= lastDay[1] || day[2] <= lastDay[2]) {
-            bool firstLine = true;
             cout << '\n';
             for (int column = 0;  column < 3;  ++column) {
                 int month = leftMonth + 4*column;
@@ -187,6 +202,7 @@ void printYear (const ProgramParameters& params) {
                 if (0 < column)
                     cout << "    ";
 
+                // Print month short name for the first row, or just blank spacing.
                 if (day[column] < 2)
                     cout << monthShortNames[month] << ' ';
                 else
@@ -206,15 +222,10 @@ void printYear (const ProgramParameters& params) {
 void printMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
-    if (params.month < 0) {
-        printYear(params);
-        return;
-    }
-
     cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n"
          << params.dowHeader << '\n';
 
-    int day = monthWeekStartDay(params.startSun, monthDayOne(params.year, params.month));
+    int day = monthWeekStartDay(params.startSun, monthDayOneDOW(params.year, params.month));
     const int numDays = monthNumDays(params.year, params.month);
 
     while (day <= numDays) {
@@ -244,22 +255,19 @@ ProgramParameters processOptions (int argc, char *argv[]) {
             exit(0);
         }
 
-        // If the first char is an alpha, then it must be a month, else we need more info.
+        if (arg[0] == '-' && arg[1] == '-') { // Command Options
 
-        if (arg[0] == '-' && arg[1] == '-') {
-
-            if (0 == _strnicmp(arg, "--startSun", strlen(arg))) {
+            if (0 == _stricmp(arg, "--startSun")) {
                 params.startSun = true;
             } else {
                 cerr << "calendar: Unrecognized option (" << arg << ").\n";
                 exit(1);
             }
 
-        } else if (isalpha(arg[0])) {
+        } else if (isalpha(arg[0])) { // Month Names
 
-            auto mlen = strlen(arg);
             for (params.month=11;  params.month >= 0;  --params.month) {
-                if (0 == _strnicmp(arg, monthNames[params.month], mlen))
+                if (0 == _strnicmp(arg, monthNames[params.month], strlen(arg)))
                     break;
             }
 
@@ -268,7 +276,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
                 exit(1);
             }
 
-        } else {
+        } else { // Numeric Arguments
 
             int val = atoi(arg);
             if (val < 0) {
@@ -294,16 +302,17 @@ ProgramParameters processOptions (int argc, char *argv[]) {
     if (params.year >= 0)
         return params;
 
-    time_t currtime_global = time(nullptr);
-    struct tm currtime_local;
-    localtime_s(&currtime_local, &currtime_global);
+    long currentYear;
+    long currentMonth;
+    std::tie(currentYear, currentMonth) = getCurrentYearMonth();
 
     if (params.year < 0) {
-        params.year = 1900 + currtime_local.tm_year;
+        params.year = currentYear;
 
+        // If months are specified, print the current or future month.
         if (params.month < 0)
             return params;
-        else if (params.month < currtime_local.tm_mon)
+        else if (params.month < currentMonth)
             ++params.year;
     }
 
@@ -315,7 +324,10 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 int main (int argc, char *argv[]) {
     auto params = processOptions(argc,argv);
 
-    printMonth(params);
+    if (params.month < 0)
+        printYear(params);
+    else
+        printMonth(params);
 
     return 0;
 }
