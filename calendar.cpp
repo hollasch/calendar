@@ -18,7 +18,7 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0-alpha.6 | 2023-12-01 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0-alpha | 2023-12-01 | https://github.com/hollasch/calendar";
 
 //--------------------------------------------------------------------------------------------------
 
@@ -27,15 +27,17 @@ calendar:  Print calendar for a given month or year
 usage   :  calendar [-h|/?|--help] [-v|--version]
            [--startSun] [month] [year]
 
-`calendar` prints the monthly calendar for a given month. If no month is
-specified, the current month will be used. If no year is supplied, the calendar
-for the nearest month will be printed.
+`calendar` prints the calendar for a given month or year. If no month is
+specified, the current annual calendar is printed. If a month is specified
+without year, then the nearest current or future month is printed.
+
+A month is specified using either its English name, or as a number from 1 to 12
+without leading zeros.
+
+A year is specified as a number greater than 12, or with leading zeros.
 
 The `--startSun` option sets first day of the week as Sunday. By default, Monday
 is considered the first day of the week.
-
-A month is recognized as starting with a letter, or if it is a number between
-1 and 12 with only one or two digits.
 )";
 
 
@@ -295,7 +297,7 @@ ProgramParameters processOptions (int argc, char *argv[]) {
             // The numeric argument is a year if it's not in [1,12], or if it's greater than two
             // digits (and leading zero).
 
-            if ((val < 1) || (12 < val) || (strlen(arg) > 2))
+            if (arg[0] == 0 || val < 1 || 12 < val || strlen(arg) > 2)
                 params.year = val;
             else
                 params.month = val-1;
