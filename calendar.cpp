@@ -10,7 +10,7 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0-alpha.3 | 2023-11-27 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0-alpha.4 | 2023-11-30 | https://github.com/hollasch/calendar";
 
 
 //--------------------------------------------------------------------------------------------------
@@ -21,18 +21,15 @@ const char* const monthNames[] {
     "July", "August", "September", "October", "November", "December"
 };
 
+const char* const monthShortNames[] {
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+};
+
 const char* dowHeaders[] {
     "Mo Tu We Th Fr Sa Su",
     "Su Mo Tu We Th Fr Sa"
 };
 
-const char* const monthShortNames[] {
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
-};
-
-const char* days[] {
-    "xx xx xx xx xx xx  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31"
-};
 
 //--------------------------------------------------------------------------------------------------
 // Classes
@@ -113,27 +110,28 @@ int monthNumDays (int year, int month) {
         { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
     };
 
-    return monthDays[isLeapYear(year) ? 0 : 1][month];
+    return monthDays[isLeapYear(year) ? 1 : 0][month];
 }
 
 
 //--------------------------------------------------------------------------------------------------
 int monthDayOne (int year, int month) {
-    // Returns the day of the week of the first of the given month and year.
+    // Returns the day of the week of the first of the given month and year. 0 = Sunday,
+    // 6 = Saturday.
 
     const static int monthDay1Offset [2][12] {
         {  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
         {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
     };
 
-    int leapYear = isLeapYear(year) ? 0 : 1;
+    int leapYear = isLeapYear(year) ? 1 : 0;
 
     return (jan1Day(year) + monthDay1Offset[leapYear][month]) % 7;
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void printCal (int year) {
+void printYear (int year) {
     // Prints the calendar for the entire given year.
     cout << "                                   --- " << year << " ---\n\n";
 
@@ -168,39 +166,46 @@ void printCal (int year) {
 
 
 //--------------------------------------------------------------------------------------------------
+void printMonthLine (int day, int lastDay) {
+    for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
+        if (1 <= day && day <= lastDay)
+            cout << std::setw(2) << day;
+        else
+            cout << "  ";
+
+        if (dowColumn < 6)
+            cout << ' ';
+    }
+    cout << '\n';
+}
+
+
+//--------------------------------------------------------------------------------------------------
 void printMonth (const ProgramParameters& params) {
     // Prints the calendar given a month and year.
 
     if (params.month < 0) {
-        printCal(params.year);
+        printYear(params.year);
         return;
     }
-
-    int calSlot = 0;
-    int day = 0;
 
     const int dayOne = monthDayOne(params.year, params.month);
     const int numDays = monthNumDays(params.year, params.month);
 
-    cout << "Number of days: " << numDays << '\n';
-    cout << "Day One: " << dayOne << " -> " << (dayOne % 7) << "\n\n";
+    cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n"
+         << params.dowHeader << '\n';
 
-    cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n";
-    cout << params.dowHeader << "\n";
+    int day;
+    if (params.startSun) {
+        day = 1 - dayOne;
+    } else {
+        day = 1 - ((dayOne + 6) % 7);
+    }
 
-    do {
-        if (calSlot++ < dayOne) {
-            cout << "   ";
-            continue;
-        }
-
-        cout << std::setw(2) << ++day << ' ';
-
-        if ((calSlot % 7) == 0) cout << '\n';
-
-    } while (day < numDays);
-
-    if ((calSlot % 7) != 0) cout << '\n';
+    while (day <= numDays) {
+        printMonthLine(day, numDays);
+        day += 7;
+    }
 }
 
 
@@ -294,11 +299,19 @@ ProgramParameters processOptions (int argc, char *argv[]) {
 int main (int argc, char *argv[]) {
     auto params = processOptions(argc,argv);
 
-    cout << "params.startSun = " << (params.startSun ? "true\n" : "false\n");
-    cout << "params.month    = " << params.month << '\n';
-    cout << "params.year     = " << params.year << '\n';
-
-    cout << "Jan 1 " << params.year << " DOW  = " << jan1Day(params.year) << '\n';
+//  cout << "\n----------------------------------------------------------------------------------------------------\n";
+//  cout << "params.month     = " << params.month << '\n';
+//  cout << "params.year      = " << params.year << '\n';
+//  cout << "params.startSun  = " << (params.startSun ? "true\n" : "false\n");
+//  cout << "params.dowHeader = '" << params.dowHeader << "'\n";
+//
+//  cout << "\nJan 1 " << params.year << " DOW   = " << jan1Day(params.year) << '\n';
+//  cout << "isLeapYear(" << params.year << ") = " << (isLeapYear(params.year) ? "true\n" : "false\n");
+//
+//  cout << "Number of days   =  " << monthNumDays(params.year, params.month) << '\n';
+//  cout << "Day One          =  " << monthDayOne(params.year, params.month) << '\n';
+//
+//  cout << "====================\n";
 
     printMonth(params);
 
