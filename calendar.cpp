@@ -18,7 +18,7 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0-alpha | 2023-12-01 | https://github.com/hollasch/calendar";
+const char* version = "calendar 1.2.0 | 2023-12-01 | https://github.com/hollasch/calendar";
 
 //--------------------------------------------------------------------------------------------------
 
