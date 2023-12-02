@@ -127,13 +127,13 @@ int jan1DayOfWeek (int year) {
 int monthNumDays (int year, int month) {
     // Return the number of days in the given month.
 
-    const static int monthLengthNonLeap[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    const static int monthLengthLeap[]    { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    const static int monthLengthCommon[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    const static int monthLengthLeap[]   { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
     if (isLeapYear(year))
         return monthLengthLeap[month];
 
-    return monthLengthNonLeap[month];
+    return monthLengthCommon[month];
 }
 
 
@@ -142,13 +142,13 @@ int monthDayOneDOW (int year, int month) {
     // Returns the day of the week of the first of the given month and year. 0 = Sunday,
     // 6 = Saturday.
 
-    const static int monthDay1OffsetNonLeap[] { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-    const static int monthDay1OffsetLeap[]    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 };
+    const static int monthDay1OffsetCommon[] { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    const static int monthDay1OffsetLeap[]   { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 };
 
     if (isLeapYear(year))
         return (jan1DayOfWeek(year) + monthDay1OffsetLeap[month]) % 7;
 
-    return (jan1DayOfWeek(year) + monthDay1OffsetNonLeap[month]) % 7;
+    return (jan1DayOfWeek(year) + monthDay1OffsetCommon[month]) % 7;
 }
 
 

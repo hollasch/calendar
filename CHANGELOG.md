@@ -10,8 +10,9 @@ Change Log -- calendar
   - Dates before the start of the Gregorian calendar (1582 October 15) yield an error.
 
 ### New
-  - Add option to print an entire year when the month is not specified
-  - New `--startSun` to print calendars using Sunday as the first column (defaulting to Monday)
+  - Proper handling of monthly and annual calendars around the start of the Gregorian calendar.
+  - Add option to print an entire year when the month is not specified.
+  - New `--startSun` to print calendars using Sunday as the first column (defaulting to Monday).
 
 
 ----------------------------------------------------------------------------------------------------
