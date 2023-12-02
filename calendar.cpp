@@ -31,10 +31,12 @@ usage   :  calendar [-h|/?|--help] [-v|--version]
 specified, the current annual calendar is printed. If a month is specified
 without year, then the nearest current or future month is printed.
 
-A month is specified using either its English name, or as a number from 1 to 12
-without leading zeros.
+This tool only supports the Gregorian calendar, so years before 1582 or months
+before October 1582 are not supported.
 
-A year is specified as a number greater than 12, or with leading zeros.
+A month is specified using either its English name, or as a number from 1 to 12.
+A year is specified as a number greater than 12, though years before 1582 are
+unsupported.
 
 The `--startSun` option sets first day of the week as Sunday. By default, Monday
 is considered the first day of the week.
@@ -57,6 +59,9 @@ const char* dowHeaders[] {
     "Mo Tu We Th Fr Sa Su",
     "Su Mo Tu We Th Fr Sa"
 };
+
+const int GregorianStartYear  = 1582;
+const int GregorianStartMonth = 9;     // Start month of Gregorian calendar (October), base 0
 
 
 //--------------------------------------------------------------------------------------------------
@@ -161,12 +166,12 @@ int monthWeekStartDay (bool startSun, int dayOne) {
 
 
 //--------------------------------------------------------------------------------------------------
-void printMonthLine (int day, int lastDay) {
+void printMonthLine (int day, int lastDay, int startDay) {
     // Print a single line of the monthly calendar (without end of line) starting at the given day.
     // Days less than one or greater than the lastDay are printed as empty spaces.
 
     for (int dowColumn = 0;  dowColumn < 7;  ++dowColumn, ++day) {
-        if (1 <= day && day <= lastDay)
+        if (startDay <= day && day <= lastDay)
             cout << std::setw(2) << day;
         else
             cout << "  ";
@@ -194,6 +199,8 @@ void printYear (const ProgramParameters& params) {
         int day[3];      // Current month day for each column
         int lastDay[3];  // Last    month day for each column
 
+        const bool firstGregorianYear = params.year == GregorianStartYear;
+
         // Initialize start and last days for each month column.
 
         for (int column = 0;  column < 3;  ++column) {
@@ -218,7 +225,11 @@ void printYear (const ProgramParameters& params) {
                 else
                     cout << "    ";
 
-                printMonthLine(day[column], lastDay[column]);
+                int startDay = 1;
+                if (firstGregorianYear && month <= GregorianStartMonth)
+                    startDay = (month == GregorianStartMonth) ? 15 : 99;
+
+                printMonthLine(day[column], lastDay[column], startDay);
                 day[column] += 7;
             }
         }
@@ -235,11 +246,16 @@ void printMonth (const ProgramParameters& params) {
     cout << '\n' << monthNames[params.month] << ' ' << params.year << "\n\n"
          << params.dowHeader << '\n';
 
+    int startDay = 1;
     int day = monthWeekStartDay(params.startSun, monthDayOneDOW(params.year, params.month));
     const int numDays = monthNumDays(params.year, params.month);
 
+    // Special case for the first month of the Gregorian calendar.
+    if (params.year == GregorianStartYear && params.month == GregorianStartMonth)
+        startDay = 15;
+
     while (day <= numDays) {
-        printMonthLine(day, numDays);
+        printMonthLine(day, numDays, startDay);
         cout << '\n';
         day += 7;
     }
@@ -294,26 +310,22 @@ ProgramParameters processOptions (int argc, char *argv[]) {
                 exit(1);
             }
 
-            // The numeric argument is a year if it has a leading zero, or is greater than two
-            // digits, or if it is outside the interval [1,12].
-
-            if (arg[0] == 0 || val < 1 || 12 < val || strlen(arg) > 2)
-                params.year = val;
-            else
+            if (val <= 12)
                 params.month = val-1;
+            else
+                params.year = val;
         }
     }
 
     // Handle limits of the Gregorian calendar.
 
-    const int GregorianStartYear  = 1582;
-    const int GregorianStartMonth = 11;
+    if (0 <= params.year && params.year < GregorianStartYear) {
+        cerr << "calendar: Years before the start of the Gregorian calendar (15 October 1582) are unsupported.\n";
+        exit(1);
+    }
 
-    if (  params.year < GregorianStartYear
-       || (params.year == GregorianStartYear && params.month <= GregorianStartMonth)
-       )
-    {
-        cerr << "calendar: Dates before the start of the Gregorian calendar (4-15 October 1582) are unsupported.\n";
+    if (params.year == GregorianStartYear && (0 <= params.month && params.month < GregorianStartMonth)) {
+        cerr << "calendar: Months before the start of the Gregorian calendar (15 October 1582) are unsupported.\n";
         exit(1);
     }
 
