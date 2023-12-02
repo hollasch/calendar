@@ -1,19 +1,30 @@
 Calendar
 ====================================================================================================
 
-This is just a simple command-line utility to print out calendar information.
+A simple command-line utility to print out month or annual calendars.
 
 
 Usage
 ------
-    calendar:  Print a calendar for a given month
-    usage   :  calendar [month] [year]
+    calendar:  Print calendar for a given month or year
+    usage   :  calendar [-h|/?|--help] [-v|--version]
+               [--startSun] [month] [year]
 
-    `calendar` prints the calendar for a given month. If no month is specified,
-    the current month will be used. If no year is supplied, the calendar for the
-    nearest month will be printed.
+    `calendar` prints the calendar for a given month or year. If no month is
+    specified, the current annual calendar is printed. If a month is specified
+    without year, then the nearest current or future month is printed.
 
-    v1.1.0  /  2020-05-07  /  https://github.com/hollasch/calendar
+    This tool only supports the Gregorian calendar, so years before 1582 or months
+    before October 1582 are not supported.
+
+    A month is specified using either its English name, or as a number from 1 to 12.
+    A year is specified as a number greater than 12, though years before 1582 are
+    unsupported.
+
+    The `--startSun` option sets first day of the week as Sunday. By default, Monday
+    is considered the first day of the week.
+
+    calendar 1.2.0 | 2023-12-01 | https://github.com/hollasch/calendar
 
 
 Building
@@ -40,5 +51,5 @@ You can find the built release executable in `build/Release/`.
 
 
 ----------------------------------------------------------------------------------------------------
-Steve Hollasch <steve@hollasch.net><br>
+Steve Hollasch &lt;steve@hollasch.net&gt;<br>
 https://github.com/hollasch/calendar
