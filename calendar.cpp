@@ -18,7 +18,7 @@
 using std::cout, std::cerr;
 
 
-const char* version = "calendar 1.2.0 | 2023-12-01 | https://github.com/hollasch/calendar";
+const char* version = "calendar 2.0.0 | 2024-02-05 | https://github.com/hollasch/calendar";
 
 //--------------------------------------------------------------------------------------------------
 
@@ -190,7 +190,12 @@ void printYear (const ProgramParameters& params) {
 
     // Print four rows of three month columns.
 
-    for (int leftMonth=0;  leftMonth < 4;  ++leftMonth) {
+    const bool rowMajor = true;  // Months go (true=left-to-right, false=top-to-bottom) first.
+    const int  lastRowStart = rowMajor ? 9 : 3;
+    const int  rowStep      = rowMajor ? 3 : 1;
+    const int  colStep      = rowMajor ? 1 : 4;
+
+    for (int leftMonth=0;  leftMonth <= lastRowStart;  leftMonth += rowStep) {
 
         cout << "\n    "   << params.dowHeader   // Print day-of-week headers
              << "        " << params.dowHeader
@@ -204,7 +209,7 @@ void printYear (const ProgramParameters& params) {
         // Initialize start and last days for each month column.
 
         for (int column = 0;  column < 3;  ++column) {
-            int month = leftMonth + 4*column;
+            int month = leftMonth + colStep*column;
             day[column] = monthWeekStartDay(params.startSun, monthDayOneDOW(params.year, month)),
             lastDay[column] = monthNumDays(params.year, month);
         }
@@ -214,7 +219,7 @@ void printYear (const ProgramParameters& params) {
         while (day[0] <= lastDay[0] || day[1] <= lastDay[1] || day[2] <= lastDay[2]) {
             cout << '\n';
             for (int column = 0;  column < 3;  ++column) {
-                int month = leftMonth + 4*column;
+                int month = leftMonth + colStep*column;
 
                 if (0 < column)
                     cout << "    ";

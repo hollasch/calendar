@@ -24,7 +24,7 @@ Usage
     The `--startSun` option sets first day of the week as Sunday. By default, Monday
     is considered the first day of the week.
 
-    calendar 1.2.0 | 2023-12-01 | https://github.com/hollasch/calendar
+    calendar 2.0.0 | 2024-02-05 | https://github.com/hollasch/calendar
 
 
 Building
